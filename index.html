@@ -46,52 +46,7 @@
     <button onclick="commandeLivree()">✅ Commande livrée</button>
   </div>
 
-  <script type="module">
-    import { database } from './firebase.js';
-    import {
-      ref,
-      set,
-      remove
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    const params = new URLSearchParams(window.location.search);
-    const commandeId = params.get('id');
-    document.getElementById('commandeId').textContent = commandeId || 'Inconnue';
-
-    let watchId;
-
-    window.departLivraison = () => {
-      const phone = document.getElementById('phone').value.trim();
-      if (!phone || !commandeId) {
-        alert("Merci de renseigner le téléphone et le numéro de commande dans l'URL.");
-        return;
-      }
-
-      // Envoi du SMS (ouvre l'app SMS)
-      const suiviURL = `${window.location.origin}/suivi.html?id=${commandeId}`;
-      const message = `Votre commande Cosmo Sushi est en route ! Suivez-la ici : ${suiviURL}`;
-      window.location.href = `sms:${phone}?body=${encodeURIComponent(message)}`;
-
-      // Envoi de la position GPS en temps réel
-      if (navigator.geolocation) {
-        watchId = navigator.geolocation.watchPosition((pos) => {
-          const { latitude, longitude } = pos.coords;
-          set(ref(database, `commandes/${commandeId}`), {
-            lat: latitude,
-            lng: longitude
-          });
-        });
-      } else {
-        alert("La géolocalisation n'est pas supportée.");
-      }
-    };
-
-    window.commandeLivree = () => {
-      if (watchId) navigator.geolocation.clearWatch(watchId);
-      remove(ref(database, `commandes/${commandeId}`));
-      alert("Commande livrée ! Suivi terminé.");
-    };
-  </script>
+  <!-- Lien vers le JS de Firebase + logique GPS -->
+  <script type="module" src="script.js"></script>
 </body>
 </html>
-
