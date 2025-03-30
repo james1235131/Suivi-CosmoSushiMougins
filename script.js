@@ -1,45 +1,34 @@
-import { database } from './firebase.js';
-import {
-  ref,
-  set,
-  remove
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+// Récupère le numéro de commande depuis l’URL
+const urlParams = new URLSearchParams(window.location.search);
+const commandeId = urlParams.get('id');
 
-const params = new URLSearchParams(window.location.search);
-const commandeId = params.get('id');
-document.getElementById('commandeId').textContent = commandeId || 'Inconnue';
+// Affiche le numéro de commande si dispo
+const commandeElement = document.getElementById('commandeId');
+if (commandeId && commandeElement) {
+  commandeElement.textContent = `Commande n°${commandeId}`;
+} else {
+  commandeElement.textContent = 'Aucune commande détectée';
+}
 
-let watchId;
-
-window.departLivraison = () => {
-  const phone = document.getElementById('phone').value.trim();
-  if (!phone || !commandeId) {
-    alert("Merci de renseigner le téléphone et le numéro de commande dans l'URL.");
+// Fonction appelée lors du clic sur le bouton
+function departLivraison() {
+  const phone = document.getElementById("phone").value;
+  if (!phone) {
+    alert("Merci d'entrer un numéro de téléphone.");
     return;
   }
 
-  // Envoi du SMS avec lien de suivi
-  const suiviURL = `${window.location.origin}/suivi.html?id=${commandeId}`;
-  const message = `Votre commande Cosmo Sushi est en route ! Suivez-la ici : ${suiviURL}`;
-  window.location.href = `sms:${phone}?body=${encodeURIComponent(message)}`;
-
-  // Partage de position GPS en temps réel
-  if (navigator.geolocation) {
-    watchId = navigator.geolocation.watchPosition((pos) => {
-      const { latitude, longitude } = pos.coords;
-      set(ref(database, `commandes/${commandeId}`), {
-        lat: latitude,
-        lng: longitude
-      });
-    });
-  } else {
-    alert("La géolocalisation n'est pas supportée par ce navigateur.");
+  if (!commandeId) {
+    alert("Numéro de commande introuvable dans l’URL.");
+    return;
   }
-};
 
-window.commandeLivree = () => {
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-  remove(ref(database, `commandes/${commandeId}`));
-  alert("Commande livrée ! Suivi désactivé.");
-};
+  // Lien de suivi dynamique
+  const trackingUrl = `https://suivi-cosmosushimougins.netlify.app/suivi.html?id=${commandeId}`;
+  const message = encodeURIComponent(
+    `Votre commande Cosmo Sushi est en route. Vous pouvez suivre la livraison ici : ${trackingUrl}`
+  );
 
+  // Ouvre l'app SMS avec message
+  window.location.href = `sms:${phone}?&body=${message}`;
+}
