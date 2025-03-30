@@ -1,1 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Suivi de votre livraison</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script type="module">
+    import { database } from './firebase.js';
+    import {
+      ref,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const params = new URLSearchParams(window.location.search);
+    const commandeId = params.get('id');
+
+    if (!commandeId) {
+      alert("Aucune commande fournie.");
+    }
+
+    const map = L.map("map").setView([0, 0], 15);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+    const marker = L.marker([0, 0]).addTo(map);
+
+    const suiviRef = ref(database, `commandes/${commandeId}`);
+
+    onValue(suiviRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.lat && data.lng) {
+        const position = [data.lat, data.lng];
+        marker.setLatLng(position);
+        map.setView(position);
+      } else {
+        alert("🚚 La commande a été livrée ou n'est plus suivie.");
+        document.body.innerHTML = "<h2 style='text-align:center;padding:2em'>✅ Livraison terminée</h2>";
+      }
+    });
+  </script>
+</body>
+</html>
 
