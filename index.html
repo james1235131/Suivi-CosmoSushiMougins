@@ -1,46 +1,27 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Livraison - Cosmo Sushi</title>
+  <meta charset="UTF-8">
+  <title>Cosmo Sushi - Livraison</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      margin: 30px;
-    }
-
-    .step {
-      margin: 1em;
-      padding: 1em;
-      border: 2px solid #CACAD6;
-      border-radius: 12px;
-      background-color: #f3f3f3;
-    }
-
-    input, button {
-      padding: 10px;
-      font-size: 1em;
-      margin-top: 10px;
-    }
-
-    h2 {
-      color: #333;
-    }
+    body { font-family: sans-serif; text-align: center; padding: 2em; }
+    .step { padding: 1em; background: #eee; margin-bottom: 1em; }
+    input, button { padding: 1em; margin: 1em; font-size: 1em; }
   </style>
 </head>
 <body>
-
-  <h2 id="commandeId">Chargement...</h2>
+  <h2 id="commandeId">Commande ...</h2>
 
   <div class="step">
-    <label for="phone">Numéro de téléphone du client :</label><br>
-    <input type="tel" id="phone" placeholder="+33600000000" />
+    <label for="phone">Numéro du client :</label><br>
+    <input type="tel" id="phone" placeholder="+33612345678" />
   </div>
 
-  <button id="departLivraisonBtn">📦 Départ en livraison</button>
+  <button onclick="departLivraison()">🚀 Départ en livraison</button>
+  <button id="btnLivree" onclick="commandeLivree()" style="display:none;">✅ Commande livrée</button>
 
-  <!-- Firebase SDK & script -->
-  <script type="module" src="./script.js"></script>
+  <script src="firebase.js" type="module"></script>
+  <script src="script.js" type="module"></script>
 </body>
 </html>
