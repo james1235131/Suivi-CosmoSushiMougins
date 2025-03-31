@@ -37,7 +37,7 @@ function startTracking() {
 
 // Fonction appelée lors du clic sur le bouton "Départ en livraison"
 function departLivraison() {
-  const phone = document.getElementById("phone").value.trim();
+  const phone = document.getElementById("phone").value.trim(); // Numéro de téléphone du client
 
   if (!phone) {
     alert("Merci d'entrer un numéro de téléphone.");
