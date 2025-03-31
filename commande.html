@@ -47,7 +47,7 @@
         tel: numero
       });
 
-      const message = `Bonjour ! Votre commande n°${commandeId} part en livraison. Suivez votre livreur ici : https://suivi-cosmosushimougins.netlify.app/client.html?id=${commandeId}`;
+      const message = `Bonjour ! Votre commande Cosmo Sushi est en route. Suivez votre livreur ici : https://suivi-cosmosushimougins.netlify.app/client.html?id=${commandeId}`;
       window.location.href = `sms:${numero}?body=${encodeURIComponent(message)}`;
     }
 
