@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suivi de livraison</title>
+</head>
+<body>
+  <h1>Suivi de livraison</h1>
+  <p>Commande n° <span id="commande-id"></span></p>
+
+  <label for="phone">Numéro du client :</label><br/>
+  <input type="tel" id="phone" placeholder="06 00 00 00 00"/><br/><br/>
+
+  <button onclick="enLivraison()">📦 En livraison</button><br/><br/>
+  <button onclick="livree()">✅ Commande livrée</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const commandeId = urlParams.get('id');
+    document.getElementById('commande-id').textContent = commandeId;
+
+    function enLivraison() {
+      const numero = document.getElementById('phone').value.replace(/\s+/g, '');
+      if (!numero) {
+        alert("Entre un numéro de téléphone !");
+        return;
+      }
+      const message = `Bonjour ! Votre commande n°${commandeId} part en livraison. Suivez votre livreur ici : https://tonsite.netlify.app/client.html?id=${commandeId}`;
+      window.location.href = `sms:${numero}?body=${encodeURIComponent(message)}`;
+    }
+
+    function livree() {
+      alert("Commande marquée comme livrée (à connecter à Firebase ensuite)");
+    }
+  </script>
+</body>
+</html>
