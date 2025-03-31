@@ -1,41 +1,46 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Suivi Livraison - Cosmo Sushi</title>
+  <meta charset="UTF-8" />
+  <title>Livraison - Cosmo Sushi</title>
   <style>
     body {
       font-family: sans-serif;
       text-align: center;
-      margin: 2em;
+      margin: 30px;
     }
+
     .step {
       margin: 1em;
       padding: 1em;
-      border: 2px solid #4CAF50;
-      border-radius: 8px;
-      background-color: #eafbea;
+      border: 2px solid #CACAD6;
+      border-radius: 12px;
+      background-color: #f3f3f3;
     }
+
     input, button {
-      margin-top: 1em;
-      padding: 0.5em;
+      padding: 10px;
       font-size: 1em;
+      margin-top: 10px;
     }
+
     h2 {
-      color: #444;
+      color: #333;
     }
   </style>
 </head>
 <body>
+
   <h2 id="commandeId">Chargement...</h2>
 
   <div class="step">
     <label for="phone">Numéro de téléphone du client :</label><br>
-    <input type="tel" id="phone" placeholder="+33612345678">
+    <input type="tel" id="phone" placeholder="+33600000000" />
   </div>
 
-  <button onclick="departLivraison()">Départ en livraison</button>
+  <button id="departLivraisonBtn">📦 Départ en livraison</button>
 
-  <script src="script.js"></script>
+  <!-- Firebase SDK & script -->
+  <script type="module" src="./script.js"></script>
 </body>
 </html>
