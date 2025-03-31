@@ -26,32 +26,34 @@
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <script type="module">
     import { database } from './firebase.js';
-    import {
-      ref,
-      onValue
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+    // Récupération du paramètre commandeId dans l'URL
     const params = new URLSearchParams(window.location.search);
-    const commandeId = params.get('id');
+    const commandeId = params.get('commandeId'); // Correction : le nom du paramètre est 'commandeId'
 
     if (!commandeId) {
       alert("Aucune commande fournie.");
     }
 
-    const map = L.map("map").setView([0, 0], 15);
+    // Initialisation de la carte Leaflet
+    const map = L.map("map").setView([48.8566, 2.3522], 13); // Paris par défaut (coordonnées)
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap"
     }).addTo(map);
-    const marker = L.marker([0, 0]).addTo(map);
 
+    const marker = L.marker([48.8566, 2.3522]).addTo(map); // Marqueur par défaut
+
+    // Référence Firebase pour suivre la commande
     const suiviRef = ref(database, `commandes/${commandeId}`);
 
+    // Fonction pour surveiller les changements dans la base de données
     onValue(suiviRef, (snapshot) => {
       const data = snapshot.val();
       if (data && data.lat && data.lng) {
-        const position = [data.lat, data.lng];
-        marker.setLatLng(position);
-        map.setView(position);
+        const position = [data.lat, data.lng];  // Coordonnées de la commande
+        marker.setLatLng(position);  // Mettre à jour la position du marqueur
+        map.setView(position);  // Centrer la carte sur la nouvelle position
       } else {
         alert("🚚 La commande a été livrée ou n'est plus suivie.");
         document.body.innerHTML = "<h2 style='text-align:center;padding:2em'>✅ Livraison terminée</h2>";
@@ -60,4 +62,3 @@
   </script>
 </body>
 </html>
-
