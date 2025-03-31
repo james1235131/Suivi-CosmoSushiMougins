@@ -1,20 +1,25 @@
-// Récupère le numéro de commande depuis l’URL
-const urlParams = new URLSearchParams(window.location.search);
-const commandeId = urlParams.get('id');
+// Importer Firebase
+import { db } from "./firebase.js";
+import { ref, set } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-// Affiche le numéro de commande si dispo
-const commandeElement = document.getElementById('commandeId');
+// Récupération du numéro de commande dans l’URL
+const urlParams = new URLSearchParams(window.location.search);
+const commandeId = urlParams.get("id");
+
+// Affichage du numéro de commande sur la page (si présent)
+const commandeElement = document.getElementById("commandeId");
 if (commandeId && commandeElement) {
   commandeElement.textContent = `Commande n°${commandeId}`;
-} else {
-  commandeElement.textContent = 'Aucune commande détectée';
+} else if (commandeElement) {
+  commandeElement.textContent = "Aucune commande détectée";
 }
 
-// Fonction appelée lors du clic sur le bouton
+// Fonction exécutée quand le livreur clique sur "Départ en livraison"
 function departLivraison() {
   const phone = document.getElementById("phone").value;
+
   if (!phone) {
-    alert("Merci d'entrer un numéro de téléphone.");
+    alert("Merci d’entrer un numéro de téléphone.");
     return;
   }
 
@@ -23,12 +28,18 @@ function departLivraison() {
     return;
   }
 
-  // Lien de suivi dynamique
-  const trackingUrl = `https://suivi-cosmosushimougins.netlify.app/suivi.html?id=${commandeId}`;
-  const message = encodeURIComponent(
-    `Votre commande Cosmo Sushi est en route. Vous pouvez suivre la livraison ici : ${trackingUrl}`
-  );
+  // Géolocalisation + envoi dans Firebase
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
 
-  // Ouvre l'app SMS avec message
-  window.location.href = `sms:${phone}?&body=${message}`;
-}
+        // Envoi de la position dans Firebase
+        set(ref(db, "commandes/" + commandeId), {
+          lat: latitude,
+          lng: longitude
+        });
+      },
+      (error) => {
+        alert("Erreur GPS : " + error.message);
+      },
