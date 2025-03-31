@@ -11,15 +11,16 @@
   <h1>Suivi de votre commande</h1>
   <p>Commande n° <span id="commande-id"></span></p>
   <p id="etat">Chargement du statut...</p>
+
   <div id="tracking" style="display: none;">
     <button id="gps-button">📍 Suivre le livreur</button>
   </div>
+
   <div id="fin" style="display: none;">
     <p>✅ Votre commande a été livrée. Bon appétit !</p>
   </div>
 
   <script>
-    // 🔐 Config Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBzKYZFVo4935ffEwvD8G2gYCb3i8RMkXU",
       authDomain: "livraison-cosmosushimougins.firebaseapp.com",
@@ -30,7 +31,6 @@
       appId: "1:977101512051:web:04aeda0d6956ac1337b906"
     };
 
-    // 🚀 Init Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -43,6 +43,27 @@
     const finElt = document.getElementById("fin");
     const gpsButton = document.getElementById("gps-button");
 
-    // 🧠 Suivi en temps réel du statut
     db.ref("commandes/" + commandeId + "/statut").on("value", snapshot => {
       const statut = snapshot.val();
+
+      if (statut === "en_livraison") {
+        statutElt.textContent = "🚗 Votre commande est en route !";
+        trackingElt.style.display = "block";
+        finElt.style.display = "none";
+      } else if (statut === "livree") {
+        statutElt.textContent = "✅ Commande livrée";
+        trackingElt.style.display = "none";
+        finElt.style.display = "block";
+      } else {
+        statutElt.textContent = "⏳ Votre commande est en préparation...";
+        trackingElt.style.display = "none";
+        finElt.style.display = "none";
+      }
+    });
+
+    gpsButton.addEventListener("click", () => {
+      window.open("https://www.google.com/maps", "_blank");
+    });
+  </script>
+</body>
+</html>
