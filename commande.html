@@ -18,11 +18,43 @@
   <button onclick="livree()">✅ Commande livrée</button>
 
   <script>
-    // Config Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBzKYZFVo4935ffEwvD8G2gYCb3i8RMkXU",
       authDomain: "livraison-cosmosushimougins.firebaseapp.com",
       databaseURL: "https://livraison-cosmosushimougins-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "livraison-cosmosushimougins",
       storageBucket: "livraison-cosmosushimougins.firebasestorage.app",
-      messagingSenderId: "977101512
+      messagingSenderId: "977101512051",
+      appId: "1:977101512051:web:04aeda0d6956ac1337b906"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const commandeId = urlParams.get('id');
+    document.getElementById('commande-id').textContent = commandeId;
+
+    function enLivraison() {
+      const numero = document.getElementById('phone').value.replace(/\s+/g, '');
+      if (!numero) {
+        alert("Entre un numéro de téléphone !");
+        return;
+      }
+
+      db.ref("commandes/" + commandeId).set({
+        statut: "en_livraison",
+        tel: numero
+      });
+
+      const message = `Bonjour ! Votre commande n°${commandeId} part en livraison. Suivez votre livreur ici : https://suivi-cosmosushimougins.netlify.app/client.html?id=${commandeId}`;
+      window.location.href = `sms:${numero}?body=${encodeURIComponent(message)}`;
+    }
+
+    function livree() {
+      db.ref("commandes/" + commandeId + "/statut").set("livree");
+      alert("Commande marquée comme livrée !");
+    }
+  </script>
+</body>
+</html>
