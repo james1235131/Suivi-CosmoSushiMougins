@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Suivi de votre livraison</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suivi de votre livraison</title>
   <style>
     html, body {
       margin: 0;
@@ -14,51 +14,146 @@
       height: 100%;
       width: 100%;
     }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+    }
   </style>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 </head>
 <body>
-  <div id="map"></div>
+  <div class="container">
+    <h2 id="commandeId"></h2>
+    <input type="text" id="phone" placeholder="Numéro du client (06...)" />
+    <button id="departBtn" onclick="departLivraison()">Départ en livraison</button>
+    <button id="btnLivree">Commande livrée</button>
+    <div id="map"></div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <script type="module">
     import { database } from './firebase.js';
     import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Récupération du paramètre commandeId dans l'URL
+    // Récupérer le numéro de commande depuis l'URL
     const params = new URLSearchParams(window.location.search);
-    const commandeId = params.get('commandeId'); // Correction : le nom du paramètre est 'commandeId'
+    const commandeId = params.get("id");
 
-    if (!commandeId) {
-      alert("Aucune commande fournie.");
+    // Afficher le numéro de commande
+    const commandeElement = document.getElementById("commandeId");
+    if (commandeId) {
+      commandeElement.textContent = "Commande n°" + commandeId;
+    } else {
+      commandeElement.textContent = "Aucune commande détectée";
     }
 
-    // Initialisation de la carte Leaflet
-    const map = L.map("map").setView([48.8566, 2.3522], 13); // Paris par défaut (coordonnées)
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap"
-    }).addTo(map);
+    // Fonction pour récupérer la géolocalisation du livreur
+    let watchId; // Pour stocker l'ID du watcher
 
-    const marker = L.marker([48.8566, 2.3522]).addTo(map); // Marqueur par défaut
+    function startTracking() {
+      if (navigator.geolocation) {
+        // Récupérer la position GPS en temps réel
+        watchId = navigator.geolocation.watchPosition(function(position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
 
-    // Référence Firebase pour suivre la commande
-    const suiviRef = ref(database, `commandes/${commandeId}`);
+          // Référence de la base de données Firebase
+          const ref = firebase.database().ref('commandes/' + commandeId);
 
-    // Fonction pour surveiller les changements dans la base de données
-    onValue(suiviRef, (snapshot) => {
+          // Mettre à jour les coordonnées GPS du livreur dans Firebase
+          ref.update({
+            lat: latitude,
+            lng: longitude,
+            status: "en livraison" // Marquer la commande comme "en livraison"
+          });
+        }, function(error) {
+          console.log("Erreur de géolocalisation: " + error.message);
+        });
+      }
+    }
+
+    // Fonction appelée lors du clic sur le bouton "Départ en livraison"
+    function departLivraison() {
+      const phone = document.getElementById("phone").value.trim(); // Numéro de téléphone du client
+
+      if (!phone) {
+        alert("Merci d'entrer un numéro de téléphone.");
+        return;
+      }
+
+      if (!commandeId) {
+        alert("Aucune commande trouvée dans l'URL.");
+        return;
+      }
+
+      // Lien pour envoyer un SMS avec le lien de suivi
+      const suiviUrl = `https://suivi-cosmosushimougins.netlify.app/suivi.html?id=${commandeId}`;
+      const message = encodeURIComponent(`Votre commande Cosmo Sushi est en route. Suivez-la ici : ${suiviUrl}`);
+
+      // Ouvre l'application SMS du téléphone avec le message pré-rempli
+      window.location.href = `sms:?body=${message}`;
+
+      // Démarrer le suivi GPS (pour le livreur)
+      startTracking();
+    }
+
+    // Fonction pour marquer la commande comme livrée
+    function marquerCommandeLivree() {
+      if (!commandeId) {
+        alert("Aucune commande trouvée.");
+        return;
+      }
+
+      const ref = firebase.database().ref('commandes/' + commandeId);
+
+      // Mettre à jour le statut de la commande pour marquer comme livrée
+      ref.update({
+        status: "livrée", // Changer le statut à "livrée"
+        lat: null, // Supprimer les coordonnées GPS
+        lng: null
+      }).then(() => {
+        alert("La commande a été livrée !");
+        window.location.href = "suivi.html"; // Rediriger si nécessaire
+      });
+    }
+
+    // Ajouter l'événement pour marquer la commande livrée
+    document.getElementById("btnLivree").addEventListener("click", marquerCommandeLivree);
+
+    // Code pour le suivi GPS côté client : mise à jour de la carte
+    const suiviRef = firebase.database().ref('commandes/' + commandeId);
+
+    // Ecouter les changements de données de la commande en temps réel
+    suiviRef.on('value', (snapshot) => {
       const data = snapshot.val();
-      if (data && data.lat && data.lng) {
-        const position = [data.lat, data.lng];  // Coordonnées de la commande
-        marker.setLatLng(position);  // Mettre à jour la position du marqueur
-        map.setView(position);  // Centrer la carte sur la nouvelle position
-      } else {
-        alert("🚚 La commande a été livrée ou n'est plus suivie.");
-        document.body.innerHTML = "<h2 style='text-align:center;padding:2em'>✅ Livraison terminée</h2>";
+
+      if (data) {
+        const status = data.status;
+        if (status === "livrée") {
+          document.body.innerHTML = "<h2>✅ Livraison terminée</h2>";
+        } else if (data.lat && data.lng) {
+          // Afficher la carte si la commande est en cours de livraison
+          const position = [data.lat, data.lng];
+          afficherCarte(position);
+        } else {
+          document.body.innerHTML = "<h2>Suivi indisponible</h2>";
+        }
       }
     });
+
+    // Fonction pour afficher la carte avec les coordonnées GPS du livreur
+    function afficherCarte(position) {
+      const map = L.map("map").setView(position, 15);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+
+      const marker = L.marker(position).addTo(map);
+      map.setView(position);
+    }
   </script>
 </body>
 </html>
