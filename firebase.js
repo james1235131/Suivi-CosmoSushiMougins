@@ -1,19 +1,17 @@
-// firebase.js
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCSmq6ZSYKt9GKGklWufjFHmlD2Jn43iQo",
+  apiKey: "AIzaSyA5cx9pSWL6YkzFhmz2qHIjrtmgxWnt4o5fMB1w",
   authDomain: "suivi-cosmosushimougins.firebaseapp.com",
-  databaseURL: "https://suivi-cosmosushimougins-default-rtdb.europe-west1.firebasedatabase.app",
+  databaseURL: "https://suivi-cosmosushimougins-default-rtdb.europe-west1.firebasedatabase.app/",
   projectId: "suivi-cosmosushimougins",
-  storageBucket: "suivi-cosmosushimougins.firebasestorage.app",
-  messagingSenderId: "912838657291",
-  appId: "1:912838657291:web:374a4858bf83d0aad38e0e"
+  storageBucket: "suivi-cosmosushimougins.appspot.com",
+  messagingSenderId: "792108307295",
+  appId: "1:792108307295:web:93a905f8ab7e0ed8d084b6"
 };
 
-// Initialise l'app Firebase
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
