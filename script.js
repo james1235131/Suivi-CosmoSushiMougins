@@ -5,53 +5,61 @@ import {
   remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// Récupère l'ID de la commande depuis l'URL
+// Récupère le numéro de commande depuis l’URL
 const params = new URLSearchParams(window.location.search);
-const commandeId = params.get('id');
-const commandeIdEl = document.getElementById('commandeId');
+const commandeId = params.get("id");
+const commandeEl = document.getElementById("commandeId");
+const livreeBtn = document.getElementById("livreeBtn");
 
-if (commandeId && commandeIdEl) {
-  commandeIdEl.textContent = `Commande ${commandeId}`;
-  document.getElementById('btnLivree').style.display = "inline-block";
+if (commandeId) {
+  commandeEl.textContent = `Commande n°${commandeId}`;
+  livreeBtn.style.display = "block"; // Affiche le bouton "commande livrée"
+} else {
+  commandeEl.textContent = "Aucune commande détectée";
 }
 
-// Suivi GPS temps réel
 let watchId;
 
-function departLivraison() {
-  const phone = document.getElementById('phone').value.trim();
-  if (!phone) return alert("Numéro de téléphone manquant");
+window.departLivraison = () => {
+  const phone = document.getElementById("phone").value.trim();
+  if (!phone || !commandeId) {
+    alert("Merci d'entrer un numéro de téléphone et d'avoir un lien valide.");
+    return;
+  }
 
-  if (!commandeId) return alert("Aucune commande détectée");
+  const trackingUrl = `${window.location.origin}/suivi.html?id=${commandeId}`;
+  const message = `Votre commande Cosmo Sushi est en route. Suivez-la ici : ${trackingUrl}`;
 
-  const suiviUrl = `https://suivi-cosmosushimougins.netlify.app/suivi.html?id=${commandeId}`;
-  const message = encodeURIComponent(`Votre commande Cosmo Sushi est en route. Suivez-la ici : ${suiviUrl}`);
+  // Ouvre l'app SMS
+  window.location.href = `sms:${phone}?body=${encodeURIComponent(message)}`;
 
-  window.location.href = `sms:${phone}?body=${message}`;
+  // Active la géolocalisation en direct
+  if (navigator.geolocation) {
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        set(ref(database, "commandes/" + commandeId), {
+          lat: latitude,
+          lng: longitude
+        });
+      },
+      (err) => {
+        alert("Erreur GPS : " + err.message);
+      },
+      {
+        enableHighAccuracy: true
+      }
+    );
+  } else {
+    alert("La géolocalisation n’est pas disponible.");
+  }
+};
 
-  // Active le GPS
-  watchId = navigator.geolocation.watchPosition(
-    (pos) => {
-      const { latitude, longitude } = pos.coords;
-      const suiviRef = ref(database, `commandes/${commandeId}`);
-      set(suiviRef, {
-        lat: latitude,
-        lng: longitude
-      });
-    },
-    (err) => {
-      console.error("Erreur GPS", err);
-    },
-    { enableHighAccuracy: true }
-  );
-}
-
-function commandeLivree() {
+window.commandeLivree = () => {
+  if (watchId) navigator.geolocation.clearWatch(watchId);
   if (!commandeId) return;
 
-  const suiviRef = ref(database, `commandes/${commandeId}`);
-  remove(suiviRef); // Supprime le suivi
-
-  alert("Commande marquée comme livrée.");
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-}
+  const suiviRef = ref(database, "commandes/" + commandeId);
+  remove(suiviRef);
+  alert("Commande livrée, suivi terminé.");
+};
