@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suivi de votre commande</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+</head>
+<body>
+  <h1>Suivi de votre commande</h1>
+  <p>Commande n° <span id="commande-id"></span></p>
+  <p id="etat">Chargement du statut...</p>
+  <div id="tracking" style="display: none;">
+    <button id="gps-button">📍 Suivre le livreur</button>
+  </div>
+  <div id="fin" style="display: none;">
+    <p>✅ Votre commande a été livrée. Bon appétit !</p>
+  </div>
+
+  <script>
+    // 🔐 Config Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBzKYZFVo4935ffEwvD8G2gYCb3i8RMkXU",
+      authDomain: "livraison-cosmosushimougins.firebaseapp.com",
+      databaseURL: "https://livraison-cosmosushimougins-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "livraison-cosmosushimougins",
+      storageBucket: "livraison-cosmosushimougins.firebasestorage.app",
+      messagingSenderId: "977101512051",
+      appId: "1:977101512051:web:04aeda0d6956ac1337b906"
+    };
+
+    // 🚀 Init Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const params = new URLSearchParams(window.location.search);
+    const commandeId = params.get("id");
+    document.getElementById("commande-id").textContent = commandeId;
+
+    const statutElt = document.getElementById("etat");
+    const trackingElt = document.getElementById("tracking");
+    const finElt = document.getElementById("fin");
+    const gpsButton = document.getElementById("gps-button");
+
+    // 🧠 Suivi en temps réel du statut
+    db.ref("commandes/" + commandeId + "/statut").on("value", snapshot => {
+      const statut = snapshot.val();
